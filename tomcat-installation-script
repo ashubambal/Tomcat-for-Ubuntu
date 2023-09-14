@@ -5,4 +5,38 @@ sudo apt-get install tomcat9 -y
 sudo systemctl restart tomcat9
 sudo apt-get install tomcat9-admin
 
-cd /var/lib/tomcat9/webapps/conf
+# Define the username and password you want to set
+new_username="admin"
+new_password="admin"
+
+# Define the roles you want to add
+roles=("manager-gui","manager-script","manager-jmx","manager-status")
+
+# Path to the tomcat-users.xml file
+tomcat_users_file="/var/lib/tomcat9/conf/tomcat-users.xml"
+
+# Check if the file exists
+if [ ! -f "$tomcat_users_file" ]; then
+    echo "Error: $tomcat_users_file does not exist."
+    exit 1
+fi
+
+# Add or modify the user and password settings
+# We'll use sed to make the changes
+sed -i "/<\/tomcat-users>/d" "$tomcat_users_file"
+echo "  <role rolename=\"manager-gui\"/>" >> "$tomcat_users_file"
+for role in "${roles[@]}"; do
+    echo "  <role rolename=\"$role\"/>" >> "$tomcat_users_file"
+done
+echo "  <user username=\"$new_username\" password=\"$new_password\" roles=\"${roles[*]}\"/>" >> "$tomcat_users_file"
+echo "</tomcat-users>" >> "$tomcat_users_file"
+
+# Check if sed was successful
+if [ $? -eq 0 ]; then
+    echo "User '$new_username' and roles added/updated in $tomcat_users_file"
+else
+    echo "Error: Failed to add/update user and roles in $tomcat_users_file"
+    exit 1
+fi
+
+sudo systemctl restart tomcat9
