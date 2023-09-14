@@ -1,0 +1,8 @@
+#!/bin/bash
+
+sudo apt-get update -y
+sudo apt-get install tomcat9 -y
+sudo systemctl restart tomcat9
+sudo apt-get install tomcat9-admin
+
+cd /var/lib/tomcat9/webapps/conf
